@@ -43,15 +43,18 @@
       line-height: 1.5;
       caret-color: #00ff99;
         box-sizing: border-box;
-     @media (max-width: 600px) {
-       .output {
-         font-size: 0.85em; /* smaller font on phones */
-  }
-
     }
+
+     @media (max-width: 600px) {
+       textarea{
+         font-size: 0.85em; /* smaller font on phones */
+      }
+    }
+    
 
     textarea::selection {
       background: #00ff99;
       color: #000;
     }
+
 
