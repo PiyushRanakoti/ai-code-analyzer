@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI CODE ANALZYER</title>
+  <link rel="stylesheet" href="./css/body.css">
+    <link rel="stylesheet" href="./css/header.css">
+    <link rel="stylesheet" href="./css/button.css">
+    <link rel="stylesheet" href="./css/CodeArea.css">
+    <link rel="stylesheet" href="./css/footer.css">
+    <link rel="stylesheet" href="./css/reponseArea.css">
+
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1 class="Header">AI BASED CODE PLAGRISM DETECTOR</h1>
+
+
+    <div class="editor-header">
+      <span class="red"></span>
+      <span class="yellow"></span>
+      <span class="green"></span>
+    </div>
+  
+    <textarea id="UserCode" rows="3" placeholder="Give Your Code !! and let AI Review It"></textarea>
+
+<br>
+
+<button onclick="Analyze()">
+  <span class="shadow"></span>
+  <span class="edge"></span>
+  <span class="front text"> Analyze Code
+  </span>
+</button>
+
+  <h2 class="Response">AI Response </h2>
+ 
+  <div class="Response-container">
+
+    <div class="chart-container">
+      <svg width="150" height="150">
+          <circle class="circle-bg" cx="75" cy="75" r="60"></circle>
+          <circle class="circle-progress" cx="75" cy="75" r="60" stroke-dasharray="377" stroke-dashoffset="377"></circle>
+      </svg>
+      <div class="percentage">0%</div>
+      <div class="ChartText">AI SCORE </div>
+  </div>
+    
+    <div class="output" id="output">Waiting for your input...</div>
+</div>
+  <div class="names">Developed By : Piyush / Nishant / Nitin / Luv <br>
+   GREATER NOIDA @ 2025 </div>
+
+
+<script src="script.js"></script>
+
+  
+</body>
+
+</html>
