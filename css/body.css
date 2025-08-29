@@ -1,0 +1,26 @@
+body {
+  font-family: monospace;
+  background: #0d1117;
+  color: #c9d1d9;
+  padding: 20px;
+}
+
+
+
+label {
+  font-size: 1.1em;
+  margin-bottom: 5px;
+  display: block;
+}
+
+textarea, input, button {
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  background: #161b22;
+  color: #fff;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  font-size: 1em;
+}
+

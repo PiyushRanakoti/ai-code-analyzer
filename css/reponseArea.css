@@ -1,0 +1,69 @@
+
+.output {
+   background: #0d1117;
+    padding: 15px;
+    white-space: pre-wrap;
+    border: 5px solid #32f3a6;
+    border-radius: 4px;
+    font-size: 16px;
+    color: #18deec;
+    flex: 1; /* take all remaining space next to chart */
+    min-height: 150px; /* match chart height */
+    overflow-y: auto; /* scroll if content too long */
+}
+
+.Response{
+  margin-top: 26px;
+  text-align: center;
+    color:#18deec;
+font-size: 26px;
+
+}
+
+.chart-container {
+    width: 150px;
+    height: 150px;
+    flex-shrink: 0; /* keep chart fixed size */
+    position: relative;
+}
+
+.circle-bg {
+    stroke: #4b4b4b;
+    fill: none;
+    stroke-width: 15;
+}
+
+.circle-progress {
+    stroke: #0a84ff;
+    fill: none;
+    stroke-width: 15;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    transition: stroke-dashoffset 1s ease;
+}
+
+.percentage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.ChartText{
+    text-align: center;
+    font-size: 20px;
+    color: #18deec;
+    font-weight: bold;
+    text-decoration-line: overline;
+}
+
+.Response-container{
+    display: flex;
+    max-width: 2000px;
+    margin: 0 auto;
+    gap: 50px;
+    align-items: flex-start;
+}

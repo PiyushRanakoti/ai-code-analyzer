@@ -1,0 +1,52 @@
+
+ .editor {
+      width: 200%;
+      max-width: 100%;
+      margin: auto auto;
+      background: #1e1e1e;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      border: 1px solid #333;
+    }
+
+    .editor-header {
+      background: #111;
+      padding: 10px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .editor-header span {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .red { background: #ff5f56; }
+    .yellow { background: #ffbd2e; }
+    .green { background: #27c93f; }
+
+    textarea {
+      width: 100%;
+      height: 400px;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      font-family: "Fira Code", monospace;
+      font-size: 15px;
+      padding: 15px;
+      border: none;
+      outline: none;
+      resize: none;
+      line-height: 1.5;
+      caret-color: #00ff99;
+        box-sizing: border-box;
+
+    }
+
+    textarea::selection {
+      background: #00ff99;
+      color: #000;
+    }
