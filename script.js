@@ -58,12 +58,15 @@ streamText(text, 'output', 10);
 
   }
   catch(e){
-      document.getElementById("output").innerText = "AI is unable to analyze code at this moment"
+      const ErrText = "AI is unable to analyze code at this moment"
+      streamText(ErrText, 'output', 10);
+
       setPercentage(0)
   }
       
 
   
 }
+
 
 window.Analyze = Analyze
