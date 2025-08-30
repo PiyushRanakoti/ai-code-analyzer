@@ -58,7 +58,7 @@ streamText(text, 'output', 10);
 
   }
   catch(e){
-      const ErrText = "AI is unable to analyze code at this moment"
+      const ErrText = "⚠️AI analysis is currently unavailable at this moment. Please try again later."
       streamText(ErrText, 'output', 10);
 
       setPercentage(0)
@@ -70,3 +70,4 @@ streamText(text, 'output', 10);
 
 
 window.Analyze = Analyze
+
