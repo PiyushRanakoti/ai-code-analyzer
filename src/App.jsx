@@ -13,28 +13,15 @@ function App() {
   });
   const [copied, setCopied] = useState(false);
 
+  const [stats, setStats] = useState(() => {
+    const saved = localStorage.getItem('analysis_stats');
+    return saved ? JSON.parse(saved) : { totalScans: 0, aiDetected: 0 };
+  });
+
   useEffect(() => {
     localStorage.setItem('analysis_history', JSON.stringify(history));
-  }, [history]);
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const clearHistory = () => {
-    setHistory([]);
-    localStorage.removeItem('analysis_history');
-  };
-
-  const streamText = async (text, speed = 20) => {
-    setStreamedText("");
-    for (let i = 0; i < text.length; i++) {
-      setStreamedText(prev => prev + text[i]);
-      await new Promise(resolve => setTimeout(resolve, speed));
-    }
-  };
+    localStorage.setItem('analysis_stats', JSON.stringify(stats));
+  }, [history, stats]);
 
   const handleAnalyze = async () => {
     if (!code.trim()) return;
@@ -65,6 +52,12 @@ function App() {
 
       setResult(percent);
       
+      // Update Stats
+      setStats(prev => ({
+        totalScans: prev.totalScans + 1,
+        aiDetected: percent > 50 ? prev.aiDetected + 1 : prev.aiDetected
+      }));
+
       // Add to history
       const newEntry = {
         id: Date.now(),
@@ -93,11 +86,18 @@ function App() {
 
       <div className="relative max-w-6xl mx-auto px-4 py-8">
         <header className="text-center mb-10 animate-in fade-in slide-in-from-top duration-700">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-medium mb-4">
-            <Sparkles className="w-4 h-4" />
-            <span>AI-Powered Plagiarism Guard</span>
+          <div className="inline-flex items-center gap-4 px-4 py-2 rounded-full bg-slate-900/80 border border-slate-800 text-slate-400 text-xs font-medium mb-6">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+              <span>{stats.totalScans} Total Scans</span>
+            </div>
+            <div className="w-px h-3 bg-slate-800" />
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
+              <span>{stats.aiDetected} AI Flags</span>
+            </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-200 to-indigo-400 mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-200 to-indigo-400 mb-4 tracking-tight">
             AI CODE DETECTOR
           </h1>
           <p className="text-slate-400 text-base max-w-2xl mx-auto">
@@ -232,13 +232,27 @@ function App() {
               </div>
             </div>
 
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl h-48 overflow-hidden flex flex-col">
-              <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2 shrink-0">
-                <Sparkles className="w-4 h-4 text-indigo-400" />
-                Analysis Report
-              </h3>
-              <div className="text-xs text-slate-300 font-mono leading-relaxed overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800 whitespace-pre-wrap">
-                {streamedText || "Pending verification..."}
+            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl flex-1 flex flex-col min-h-[300px] max-h-[500px]">
+              <div className="flex items-center justify-between mb-4 shrink-0">
+                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-indigo-400" />
+                  Analysis Report
+                </h3>
+                <div className="flex gap-2">
+                  <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
+                  <div className="h-2 w-2 rounded-full bg-indigo-500/60 animate-pulse delay-75" />
+                  <div className="h-2 w-2 rounded-full bg-indigo-500/30 animate-pulse delay-150" />
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent pr-2">
+                <div className="text-xs md:text-sm text-slate-300 font-mono leading-relaxed whitespace-pre-wrap break-words">
+                  {streamedText || (
+                    <div className="flex flex-col items-center justify-center h-full text-slate-600 gap-3 py-12">
+                      <FileText className="w-8 h-8 opacity-20" />
+                      <p className="italic">Waiting for neural processing...</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
