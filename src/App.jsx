@@ -42,12 +42,24 @@ function App() {
     }
   };
 
+  const [theme, setTheme] = useState('indigo');
+  const [complexity, setComplexity] = useState(null);
+
+  const calculateComplexity = (code) => {
+    const lines = code.split('\n').length;
+    const chars = code.length;
+    if (lines < 10) return 'Low';
+    if (lines < 50) return 'Medium';
+    return 'High';
+  };
+
   const handleAnalyze = async () => {
     if (!code.trim()) return;
     
     setIsAnalyzing(true);
     setResult(null);
     setError('');
+    setComplexity(calculateComplexity(code));
     setStreamedText("AI is analyzing your code... Please wait");
 
     try {
@@ -96,14 +108,29 @@ function App() {
     }
   };
 
+  const themeColors = {
+    indigo: { primary: 'bg-indigo-600', hover: 'hover:bg-indigo-500', text: 'text-indigo-400', border: 'border-indigo-500/20', glow: 'shadow-indigo-600/20' },
+    emerald: { primary: 'bg-emerald-600', hover: 'hover:bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/20', glow: 'shadow-emerald-600/20' },
+    violet: { primary: 'bg-violet-600', hover: 'hover:bg-violet-500', text: 'text-violet-400', border: 'border-violet-500/20', glow: 'shadow-violet-600/20' },
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 selection:bg-indigo-500/30">
+    <div className={`min-h-screen bg-slate-950 text-slate-200 selection:bg-indigo-500/30 transition-colors duration-500`}>
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 -left-1/4 w-1/2 h-1/2 bg-indigo-600/10 blur-[120px] rounded-full" />
+        <div className={`absolute top-0 -left-1/4 w-1/2 h-1/2 opacity-20 blur-[120px] rounded-full transition-colors duration-1000 ${themeColors[theme].primary}`} />
         <div className="absolute bottom-0 -right-1/4 w-1/2 h-1/2 bg-blue-600/10 blur-[120px] rounded-full" />
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 py-8">
+        <div className="flex justify-end gap-2 mb-4">
+          {Object.keys(themeColors).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTheme(t)}
+              className={`w-6 h-6 rounded-full border-2 transition-all ${theme === t ? 'border-white scale-110' : 'border-transparent opacity-50'} ${themeColors[t].primary}`}
+            />
+          ))}
+        </div>
         <header className="text-center mb-10 animate-in fade-in slide-in-from-top duration-700">
           <div className="inline-flex items-center gap-4 px-4 py-2 rounded-full bg-slate-900/80 border border-slate-800 text-slate-400 text-xs font-medium mb-6">
             <div className="flex items-center gap-1.5">
@@ -168,7 +195,7 @@ function App() {
             <button
               onClick={handleAnalyze}
               disabled={isAnalyzing || !code.trim()}
-              className="group relative flex items-center justify-center gap-2 w-full py-4 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:opacity-50 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-indigo-600/20 active:scale-[0.98]"
+              className={`group relative flex items-center justify-center gap-2 w-full py-4 ${themeColors[theme].primary} ${themeColors[theme].hover} disabled:bg-slate-800 disabled:opacity-50 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg ${themeColors[theme].glow} active:scale-[0.98]`}
             >
               {isAnalyzing ? (
                 <>
@@ -209,9 +236,14 @@ function App() {
             <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-2xl backdrop-blur-xl">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-indigo-400" />
+                  <FileText className={`w-4 h-4 ${themeColors[theme].text}`} />
                   Live Score
                 </h3>
+                {complexity && (
+                  <span className="text-[10px] bg-slate-800 px-2 py-1 rounded text-slate-400">
+                    Complexity: {complexity}
+                  </span>
+                )}
               </div>
               <div className="flex flex-col items-center">
                 <div className="relative w-40 h-40 flex items-center justify-center mb-4">
