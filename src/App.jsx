@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ShieldAlert, CheckCircle2, Loader2, Sparkles, Code2, Users, History, FileText, Info, Trash2, Copy, Check, Download, Clipboard } from 'lucide-react';
+import { Search, ShieldAlert, CheckCircle2, Loader2, Sparkles, Code2, Users, History, FileText, Info, Trash2, Copy, Check, Download, Clipboard, Palette } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 
 function App() {
   const [code, setCode] = useState('');
@@ -21,9 +22,56 @@ function App() {
   });
 
   const themeColors = {
-    indigo: { primary: 'bg-indigo-600', hover: 'hover:bg-indigo-500', text: 'text-indigo-400', border: 'border-indigo-500/20', glow: 'shadow-indigo-600/20', accent: 'indigo' },
-    emerald: { primary: 'bg-emerald-600', hover: 'hover:bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/20', glow: 'shadow-emerald-600/20', accent: 'emerald' },
-    violet: { primary: 'bg-violet-600', hover: 'hover:bg-violet-500', text: 'text-violet-400', border: 'border-violet-500/20', glow: 'shadow-violet-600/20', accent: 'violet' },
+    indigo: { 
+      primary: 'bg-indigo-600', 
+      hover: 'hover:bg-indigo-500', 
+      text: 'text-indigo-400', 
+      border: 'border-indigo-500/20', 
+      glow: 'shadow-indigo-600/40', 
+      accent: 'indigo',
+      gradient: 'from-indigo-600/20',
+      ring: 'text-indigo-500'
+    },
+    emerald: { 
+      primary: 'bg-emerald-600', 
+      hover: 'hover:bg-emerald-500', 
+      text: 'text-emerald-400', 
+      border: 'border-emerald-500/20', 
+      glow: 'shadow-emerald-600/40', 
+      accent: 'emerald',
+      gradient: 'from-emerald-600/20',
+      ring: 'text-emerald-500'
+    },
+    violet: { 
+      primary: 'bg-violet-600', 
+      hover: 'hover:bg-violet-500', 
+      text: 'text-violet-400', 
+      border: 'border-violet-500/20', 
+      glow: 'shadow-violet-600/40', 
+      accent: 'violet',
+      gradient: 'from-violet-600/20',
+      ring: 'text-violet-500'
+    },
+    rose: { 
+      primary: 'bg-rose-600', 
+      hover: 'hover:bg-rose-500', 
+      text: 'text-rose-400', 
+      border: 'border-rose-500/20', 
+      glow: 'shadow-rose-600/40', 
+      accent: 'rose',
+      gradient: 'from-rose-600/20',
+      ring: 'text-rose-500'
+    },
+    amber: { 
+      primary: 'bg-amber-600', 
+      hover: 'hover:bg-amber-500', 
+      text: 'text-amber-400', 
+      border: 'border-amber-500/20', 
+      glow: 'shadow-amber-600/40', 
+      accent: 'amber',
+      gradient: 'from-amber-600/20',
+      ring: 'text-amber-500'
+    },
   };
 
   useEffect(() => {
@@ -59,28 +107,50 @@ function App() {
     }
   };
 
-  const downloadReport = () => {
+  const downloadPDFReport = () => {
     if (!result && !streamedText) return;
-    const report = `
-AI CODE DETECTION REPORT
------------------------
-Date: ${new Date().toLocaleString()}
-AI Confidence Score: ${result}%
-Code Complexity: ${complexity || 'N/A'}
+    
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(22);
+    doc.setTextColor(63, 81, 181);
+    doc.text('AI CODE DETECTION REPORT', 20, 20);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, 30);
+    
+    // Result Section
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, 35, 190, 35);
+    
+    doc.setFontSize(16);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Analysis Result', 20, 45);
+    
+    doc.setFontSize(14);
+    doc.text(`AI Confidence Score: ${result}%`, 20, 55);
+    doc.text(`Code Complexity: ${complexity || 'N/A'}`, 20, 65);
+    
+    // Explanation
+    doc.setFontSize(16);
+    doc.text('Analysis Summary', 20, 80);
+    doc.setFontSize(10);
+    const splitText = doc.splitTextToSize(streamedText, 170);
+    doc.text(splitText, 20, 90);
+    
+    // Code Snippet
+    const lastY = 90 + (splitText.length * 5);
+    if (lastY < 250) {
+      doc.setFontSize(16);
+      doc.text('Analyzed Code Snippet', 20, lastY + 10);
+      doc.setFontSize(8);
+      const codeLines = doc.splitTextToSize(code.substring(0, 1000), 170);
+      doc.text(codeLines, 20, lastY + 20);
+    }
 
-Analysis Summary:
-${streamedText}
-
-Code Snippet:
-${code}
-    `;
-    const blob = new Blob([report], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `AI_Analysis_Report_${Date.now()}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    doc.save(`AI_Report_${Date.now()}.pdf`);
   };
 
   const calculateComplexity = (code) => {
@@ -144,22 +214,27 @@ ${code}
   };
 
   return (
-    <div className={`min-h-screen bg-slate-950 text-slate-200 selection:bg-${themeColors[theme].accent}-500/30 transition-colors duration-500`}>
+    <div className={`min-h-screen bg-slate-950 text-slate-200 selection:bg-${themeColors[theme].accent}-500/30 transition-colors duration-700`}>
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className={`absolute top-0 -left-1/4 w-1/2 h-1/2 opacity-20 blur-[120px] rounded-full transition-colors duration-1000 ${themeColors[theme].primary}`} />
-        <div className="absolute bottom-0 -right-1/4 w-1/2 h-1/2 bg-blue-600/10 blur-[120px] rounded-full" />
+        <div className={`absolute top-0 -left-1/4 w-1/2 h-1/2 opacity-30 blur-[140px] rounded-full transition-all duration-1000 ${themeColors[theme].primary}`} />
+        <div className={`absolute bottom-0 -right-1/4 w-1/2 h-1/2 opacity-10 blur-[140px] rounded-full transition-all duration-1000 ${themeColors[theme].primary}`} />
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 py-8">
-        <div className="flex justify-end gap-2 mb-4">
-          {Object.entries(themeColors).map(([key, config]) => (
-            <button
-              key={key}
-              onClick={() => setTheme(key)}
-              className={`w-6 h-6 rounded-full border-2 transition-all ${theme === key ? 'border-white scale-110' : 'border-transparent opacity-50'} ${config.primary}`}
-            />
-          ))}
+        <div className="flex justify-end items-center gap-3 mb-6 bg-slate-900/40 p-2 rounded-full border border-slate-800 w-fit ml-auto">
+          <Palette className="w-4 h-4 text-slate-500 ml-2" />
+          <div className="flex gap-2 mr-1">
+            {Object.entries(themeColors).map(([key, config]) => (
+              <button
+                key={key}
+                onClick={() => setTheme(key)}
+                className={`w-6 h-6 rounded-full border-2 transition-all duration-300 ${theme === key ? 'border-white scale-125 shadow-lg shadow-white/20' : 'border-transparent opacity-40 hover:opacity-70'} ${config.primary}`}
+                title={`${key.charAt(0).toUpperCase() + key.slice(1)} Theme`}
+              />
+            ))}
+          </div>
         </div>
+        
         <header className="text-center mb-10 animate-in fade-in slide-in-from-top duration-700">
           <div className="inline-flex items-center gap-4 px-4 py-2 rounded-full bg-slate-900/80 border border-slate-800 text-slate-400 text-xs font-medium mb-6">
             <div className="flex items-center gap-1.5">
@@ -172,7 +247,7 @@ ${code}
               <span>{stats.aiDetected} AI Flags</span>
             </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-200 to-indigo-400 mb-4 tracking-tight">
+          <h1 className={`text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-${themeColors[theme].accent}-200 to-${themeColors[theme].accent}-400 mb-4 tracking-tight transition-all duration-700`}>
             AI CODE DETECTOR
           </h1>
           <p className="text-slate-400 text-base max-w-2xl mx-auto">
@@ -182,7 +257,7 @@ ${code}
 
         <main className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8 flex flex-col gap-6">
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl">
+            <div className={`bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-${themeColors[theme].accent}-500/30`}>
               <div className="flex items-center justify-between px-4 py-3 bg-slate-900/80 border-b border-slate-800">
                 <div className="flex items-center gap-4">
                   <div className="flex gap-1.5">
@@ -191,7 +266,7 @@ ${code}
                     <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
                   </div>
                   <div className="h-4 w-px bg-slate-800" />
-                  <div className="flex items-center gap-2 text-slate-500 text-xs font-mono uppercase tracking-wider">
+                  <div className={`flex items-center gap-2 ${themeColors[theme].text} text-xs font-mono uppercase tracking-wider`}>
                     <Code2 className="w-3.5 h-3.5" />
                     editor.js
                   </div>
@@ -199,7 +274,7 @@ ${code}
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={handlePaste}
-                    className="p-1.5 hover:bg-slate-800 rounded-md transition-colors text-slate-500 hover:text-slate-300 flex items-center gap-1 text-[10px]"
+                    className={`p-1.5 hover:bg-${themeColors[theme].accent}-500/10 rounded-md transition-colors text-slate-500 hover:${themeColors[theme].text} flex items-center gap-1 text-[10px]`}
                     title="Paste from clipboard"
                   >
                     <Clipboard className="w-4 h-4" />
@@ -207,7 +282,7 @@ ${code}
                   </button>
                   <button 
                     onClick={copyToClipboard}
-                    className="p-1.5 hover:bg-slate-800 rounded-md transition-colors text-slate-500 hover:text-slate-300"
+                    className={`p-1.5 hover:bg-${themeColors[theme].accent}-500/10 rounded-md transition-colors text-slate-500 hover:${themeColors[theme].text}`}
                     title="Copy code"
                   >
                     {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
@@ -225,15 +300,16 @@ ${code}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="Paste your code here and let AI review it..."
-                className="w-full h-[380px] bg-transparent p-6 font-mono text-sm focus:outline-none resize-none placeholder:text-slate-600 scrollbar-thin scrollbar-thumb-slate-800"
+                className={`w-full h-[380px] bg-transparent p-6 font-mono text-sm focus:outline-none resize-none placeholder:text-slate-600 scrollbar-thin scrollbar-thumb-slate-800 focus:bg-${themeColors[theme].accent}-500/[0.02] transition-colors`}
               />
             </div>
             
             <button
               onClick={handleAnalyze}
               disabled={isAnalyzing || !code.trim()}
-              className={`group relative flex items-center justify-center gap-2 w-full py-4 ${themeColors[theme].primary} ${themeColors[theme].hover} disabled:bg-slate-800 disabled:opacity-50 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg ${themeColors[theme].glow} active:scale-[0.98]`}
+              className={`group relative flex items-center justify-center gap-2 w-full py-4 ${themeColors[theme].primary} ${themeColors[theme].hover} disabled:bg-slate-800 disabled:opacity-50 text-white font-bold rounded-xl transition-all duration-300 shadow-xl ${themeColors[theme].glow} active:scale-[0.98] overflow-hidden`}
             >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
               {isAnalyzing ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -248,8 +324,8 @@ ${code}
             </button>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-slate-900/40 border border-slate-800/50 rounded-xl p-4 flex gap-4 items-start">
-                <div className={`p-2 rounded-lg ${themeColors[theme].text.replace('text', 'bg')}/10 ${themeColors[theme].text}`}>
+              <div className={`bg-slate-900/40 border border-slate-800/50 rounded-xl p-4 flex gap-4 items-start transition-all hover:border-${themeColors[theme].accent}-500/20`}>
+                <div className={`p-2 rounded-lg ${themeColors[theme].primary}/10 ${themeColors[theme].text}`}>
                   <Info className="w-5 h-5" />
                 </div>
                 <div>
@@ -257,7 +333,7 @@ ${code}
                   <p className="text-xs text-slate-500 mt-1">Our models analyze structural patterns, variable naming, and logic flow typical of LLMs.</p>
                 </div>
               </div>
-              <div className="bg-slate-900/40 border border-slate-800/50 rounded-xl p-4 flex gap-4 items-start">
+              <div className="bg-slate-900/40 border border-slate-800/50 rounded-xl p-4 flex gap-4 items-start transition-all hover:border-emerald-500/20">
                 <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
                   <ShieldAlert className="w-5 h-5" />
                 </div>
@@ -270,14 +346,14 @@ ${code}
           </div>
 
           <div className="lg:col-span-4 flex flex-col gap-6">
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-2xl backdrop-blur-xl">
+            <div className={`bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-${themeColors[theme].accent}-500/30`}>
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <h3 className={`text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2`}>
                   <FileText className={`w-4 h-4 ${themeColors[theme].text}`} />
                   Live Score
                 </h3>
                 {complexity && (
-                  <span className="text-[10px] bg-slate-800 px-2 py-1 rounded text-slate-400">
+                  <span className={`text-[10px] bg-${themeColors[theme].accent}-500/10 px-2 py-1 rounded ${themeColors[theme].text} border ${themeColors[theme].border}`}>
                     Complexity: {complexity}
                   </span>
                 )}
@@ -297,7 +373,7 @@ ${code}
                       strokeDashoffset={439.8 - (439.8 * (result || 0)) / 100}
                       strokeLinecap="round"
                       className={`transition-all duration-1000 ease-out ${
-                        result > 50 ? 'text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.3)]' : `text-${themeColors[theme].accent}-500`
+                        result > 50 ? 'text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.3)]' : themeColors[theme].ring
                       }`}
                     />
                   </svg>
@@ -308,7 +384,7 @@ ${code}
                 </div>
                 <div className="text-center">
                   {result !== null && (
-                    <div className={`text-sm font-medium px-4 py-1.5 rounded-full border ${
+                    <div className={`text-sm font-medium px-4 py-1.5 rounded-full border animate-in zoom-in duration-300 ${
                       result > 50 
                         ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' 
                         : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
@@ -320,7 +396,7 @@ ${code}
               </div>
             </div>
 
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl flex-1 flex flex-col min-h-[300px] max-h-[500px]">
+            <div className={`bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl flex-1 flex flex-col min-h-[300px] max-h-[500px] transition-all duration-500 hover:border-${themeColors[theme].accent}-500/30`}>
               <div className="flex items-center justify-between mb-4 shrink-0">
                 <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <Sparkles className={`w-4 h-4 ${themeColors[theme].text}`} />
@@ -329,9 +405,9 @@ ${code}
                 <div className="flex items-center gap-2">
                   {result !== null && (
                     <button 
-                      onClick={downloadReport}
-                      className={`p-1 text-slate-500 transition-colors ${themeColors[theme].hover.replace('bg', 'text')}`}
-                      title="Download Report"
+                      onClick={downloadPDFReport}
+                      className={`p-1.5 rounded-md text-slate-500 hover:${themeColors[theme].text} hover:bg-${themeColors[theme].accent}-500/10 transition-all`}
+                      title="Download PDF Report"
                     >
                       <Download className="w-4 h-4" />
                     </button>
@@ -353,7 +429,7 @@ ${code}
               </div>
             </div>
 
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl">
+            <div className={`bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl transition-all duration-500 hover:border-${themeColors[theme].accent}-500/30`}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <History className={`w-4 h-4 ${themeColors[theme].text}`} />
