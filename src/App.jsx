@@ -23,6 +23,25 @@ function App() {
     localStorage.setItem('analysis_stats', JSON.stringify(stats));
   }, [history, stats]);
 
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+    localStorage.removeItem('analysis_history');
+  };
+
+  const streamText = async (text, speed = 20) => {
+    setStreamedText("");
+    for (let i = 0; i < text.length; i++) {
+      setStreamedText(prev => prev + text[i]);
+      await new Promise(resolve => setTimeout(resolve, speed));
+    }
+  };
+
   const handleAnalyze = async () => {
     if (!code.trim()) return;
     
