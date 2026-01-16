@@ -13,13 +13,12 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [copied, setCopied] = useState(false);
-
+  const [complexity, setComplexity] = useState(null);
   const [stats, setStats] = useState(() => {
     const saved = localStorage.getItem('analysis_stats');
     return saved ? JSON.parse(saved) : { totalScans: 0, aiDetected: 0 };
   });
 
-  // Fixed Green Theme (Emerald)
   const themeColors = {
     emerald: { 
       primary: 'bg-emerald-600', 
@@ -73,11 +72,9 @@ function App() {
     const doc = new jsPDF();
     const primaryColor = [16, 185, 129]; // Emerald Green
 
-    // Background Accent
     doc.setFillColor(249, 250, 251);
     doc.rect(0, 0, 210, 297, 'F');
     
-    // Header Bar
     doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.rect(0, 0, 210, 40, 'F');
     
@@ -90,13 +87,11 @@ function App() {
     doc.setFont('helvetica', 'normal');
     doc.text(`PROJECT: AI BASED CODE PLAGIARISM DETECTOR`, 20, 34);
     
-    // Content
     doc.setTextColor(40, 40, 40);
     doc.setFontSize(10);
     doc.text(`REPORT ID: #${Date.now().toString().slice(-8)}`, 140, 50);
     doc.text(`GENERATED: ${new Date().toLocaleString()}`, 140, 55);
     
-    // Result Card
     doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.setLineWidth(0.5);
     doc.roundedRect(20, 65, 170, 45, 3, 3, 'S');
@@ -117,7 +112,6 @@ function App() {
     doc.setFontSize(10);
     doc.text(`CODE COMPLEXITY: ${complexity || 'N/A'}`, 30, 103);
     
-    // Analysis Section
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
@@ -129,7 +123,6 @@ function App() {
     const splitText = doc.splitTextToSize(streamedText, 170);
     doc.text(splitText, 20, 135);
     
-    // Code Snippet
     const lastY = 135 + (splitText.length * 5);
     if (lastY < 230) {
       doc.setFontSize(14);
@@ -147,7 +140,6 @@ function App() {
       doc.text(codeLines, 25, lastY + 30);
     }
 
-    // Footer
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
@@ -269,7 +261,9 @@ function App() {
                       fileInput.onchange = (e) => {
                         const file = e.target.files[0];
                         const reader = new FileReader();
-                        reader.onload = (re) => setCode(re.target.result);
+                        reader.onload = (re) => {
+                          setCode(re.target.result);
+                        };
                         reader.readAsText(file);
                       };
                       fileInput.click();
