@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ShieldAlert, CheckCircle2, Loader2, Sparkles, Code2, Users, History, FileText, Info, Trash2, Copy, Check } from 'lucide-react';
+import { Search, ShieldAlert, CheckCircle2, Loader2, Sparkles, Code2, Users, History, FileText, Info, Trash2, Copy, Check, Download, Clipboard } from 'lucide-react';
 
 function App() {
   const [code, setCode] = useState('');
@@ -12,11 +12,19 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [copied, setCopied] = useState(false);
+  const [theme, setTheme] = useState('indigo');
+  const [complexity, setComplexity] = useState(null);
 
   const [stats, setStats] = useState(() => {
     const saved = localStorage.getItem('analysis_stats');
     return saved ? JSON.parse(saved) : { totalScans: 0, aiDetected: 0 };
   });
+
+  const themeColors = {
+    indigo: { primary: 'bg-indigo-600', hover: 'hover:bg-indigo-500', text: 'text-indigo-400', border: 'border-indigo-500/20', glow: 'shadow-indigo-600/20', accent: 'indigo' },
+    emerald: { primary: 'bg-emerald-600', hover: 'hover:bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/20', glow: 'shadow-emerald-600/20', accent: 'emerald' },
+    violet: { primary: 'bg-violet-600', hover: 'hover:bg-violet-500', text: 'text-violet-400', border: 'border-violet-500/20', glow: 'shadow-violet-600/20', accent: 'violet' },
+  };
 
   useEffect(() => {
     localStorage.setItem('analysis_history', JSON.stringify(history));
@@ -27,6 +35,15 @@ function App() {
     navigator.clipboard.writeText(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      setCode(text);
+    } catch (err) {
+      console.error('Failed to read clipboard');
+    }
   };
 
   const clearHistory = () => {
@@ -42,12 +59,32 @@ function App() {
     }
   };
 
-  const [theme, setTheme] = useState('indigo');
-  const [complexity, setComplexity] = useState(null);
+  const downloadReport = () => {
+    if (!result && !streamedText) return;
+    const report = `
+AI CODE DETECTION REPORT
+-----------------------
+Date: ${new Date().toLocaleString()}
+AI Confidence Score: ${result}%
+Code Complexity: ${complexity || 'N/A'}
+
+Analysis Summary:
+${streamedText}
+
+Code Snippet:
+${code}
+    `;
+    const blob = new Blob([report], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `AI_Analysis_Report_${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const calculateComplexity = (code) => {
     const lines = code.split('\n').length;
-    const chars = code.length;
     if (lines < 10) return 'Low';
     if (lines < 50) return 'Medium';
     return 'High';
@@ -83,13 +120,11 @@ function App() {
 
       setResult(percent);
       
-      // Update Stats
       setStats(prev => ({
         totalScans: prev.totalScans + 1,
         aiDetected: percent > 50 ? prev.aiDetected + 1 : prev.aiDetected
       }));
 
-      // Add to history
       const newEntry = {
         id: Date.now(),
         date: new Date().toLocaleString(),
@@ -108,14 +143,8 @@ function App() {
     }
   };
 
-  const themeColors = {
-    indigo: { primary: 'bg-indigo-600', hover: 'hover:bg-indigo-500', text: 'text-indigo-400', border: 'border-indigo-500/20', glow: 'shadow-indigo-600/20' },
-    emerald: { primary: 'bg-emerald-600', hover: 'hover:bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/20', glow: 'shadow-emerald-600/20' },
-    violet: { primary: 'bg-violet-600', hover: 'hover:bg-violet-500', text: 'text-violet-400', border: 'border-violet-500/20', glow: 'shadow-violet-600/20' },
-  };
-
   return (
-    <div className={`min-h-screen bg-slate-950 text-slate-200 selection:bg-indigo-500/30 transition-colors duration-500`}>
+    <div className={`min-h-screen bg-slate-950 text-slate-200 selection:bg-${themeColors[theme].accent}-500/30 transition-colors duration-500`}>
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className={`absolute top-0 -left-1/4 w-1/2 h-1/2 opacity-20 blur-[120px] rounded-full transition-colors duration-1000 ${themeColors[theme].primary}`} />
         <div className="absolute bottom-0 -right-1/4 w-1/2 h-1/2 bg-blue-600/10 blur-[120px] rounded-full" />
@@ -123,18 +152,18 @@ function App() {
 
       <div className="relative max-w-6xl mx-auto px-4 py-8">
         <div className="flex justify-end gap-2 mb-4">
-          {Object.keys(themeColors).map((t) => (
+          {Object.entries(themeColors).map(([key, config]) => (
             <button
-              key={t}
-              onClick={() => setTheme(t)}
-              className={`w-6 h-6 rounded-full border-2 transition-all ${theme === t ? 'border-white scale-110' : 'border-transparent opacity-50'} ${themeColors[t].primary}`}
+              key={key}
+              onClick={() => setTheme(key)}
+              className={`w-6 h-6 rounded-full border-2 transition-all ${theme === key ? 'border-white scale-110' : 'border-transparent opacity-50'} ${config.primary}`}
             />
           ))}
         </div>
         <header className="text-center mb-10 animate-in fade-in slide-in-from-top duration-700">
           <div className="inline-flex items-center gap-4 px-4 py-2 rounded-full bg-slate-900/80 border border-slate-800 text-slate-400 text-xs font-medium mb-6">
             <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+              <span className={`w-2 h-2 rounded-full ${themeColors[theme].primary} shadow-[0_0_8px_rgba(99,102,241,0.5)]`} />
               <span>{stats.totalScans} Total Scans</span>
             </div>
             <div className="w-px h-3 bg-slate-800" />
@@ -168,6 +197,14 @@ function App() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <button 
+                    onClick={handlePaste}
+                    className="p-1.5 hover:bg-slate-800 rounded-md transition-colors text-slate-500 hover:text-slate-300 flex items-center gap-1 text-[10px]"
+                    title="Paste from clipboard"
+                  >
+                    <Clipboard className="w-4 h-4" />
+                    Paste
+                  </button>
                   <button 
                     onClick={copyToClipboard}
                     className="p-1.5 hover:bg-slate-800 rounded-md transition-colors text-slate-500 hover:text-slate-300"
@@ -212,7 +249,7 @@ function App() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-slate-900/40 border border-slate-800/50 rounded-xl p-4 flex gap-4 items-start">
-                <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+                <div className={`p-2 rounded-lg ${themeColors[theme].text.replace('text', 'bg')}/10 ${themeColors[theme].text}`}>
                   <Info className="w-5 h-5" />
                 </div>
                 <div>
@@ -260,7 +297,7 @@ function App() {
                       strokeDashoffset={439.8 - (439.8 * (result || 0)) / 100}
                       strokeLinecap="round"
                       className={`transition-all duration-1000 ease-out ${
-                        result > 50 ? 'text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.3)]' : 'text-emerald-500'
+                        result > 50 ? 'text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.3)]' : `text-${themeColors[theme].accent}-500`
                       }`}
                     />
                   </svg>
@@ -286,13 +323,22 @@ function App() {
             <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl flex-1 flex flex-col min-h-[300px] max-h-[500px]">
               <div className="flex items-center justify-between mb-4 shrink-0">
                 <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-indigo-400" />
+                  <Sparkles className={`w-4 h-4 ${themeColors[theme].text}`} />
                   Analysis Report
                 </h3>
-                <div className="flex gap-2">
-                  <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
-                  <div className="h-2 w-2 rounded-full bg-indigo-500/60 animate-pulse delay-75" />
-                  <div className="h-2 w-2 rounded-full bg-indigo-500/30 animate-pulse delay-150" />
+                <div className="flex items-center gap-2">
+                  {result !== null && (
+                    <button 
+                      onClick={downloadReport}
+                      className={`p-1 text-slate-500 transition-colors ${themeColors[theme].hover.replace('bg', 'text')}`}
+                      title="Download Report"
+                    >
+                      <Download className="w-4 h-4" />
+                    </button>
+                  )}
+                  <div className={`h-2 w-2 rounded-full ${themeColors[theme].primary} animate-pulse`} />
+                  <div className={`h-2 w-2 rounded-full ${themeColors[theme].primary}/60 animate-pulse delay-75`} />
+                  <div className={`h-2 w-2 rounded-full ${themeColors[theme].primary}/30 animate-pulse delay-150`} />
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent pr-2">
@@ -310,7 +356,7 @@ function App() {
             <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <History className="w-4 h-4 text-indigo-400" />
+                  <History className={`w-4 h-4 ${themeColors[theme].text}`} />
                   History
                 </h3>
                 {history.length > 0 && (
