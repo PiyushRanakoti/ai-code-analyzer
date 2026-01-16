@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ShieldAlert, CheckCircle2, Loader2, Sparkles, Code2, Users, History, FileText, Info, Trash2, Copy, Check, Download, Clipboard } from 'lucide-react';
+import { Search, ShieldAlert, CheckCircle2, Loader2, Sparkles, Code2, Users, FileText, Info, Trash2, Copy, Check, Download, Clipboard } from 'lucide-react';
 import { jsPDF } from 'jspdf';
+import HistorySidebar from './components/HistorySidebar';
+import { calculateComplexity, streamText } from './utils/analysis';
 
 function App() {
   const [code, setCode] = useState('');
@@ -10,13 +12,21 @@ function App() {
   const [error, setError] = useState('');
   const [history, setHistory] = useState(() => {
     const saved = localStorage.getItem('analysis_history');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
   });
   const [copied, setCopied] = useState(false);
   const [complexity, setComplexity] = useState(null);
   const [stats, setStats] = useState(() => {
     const saved = localStorage.getItem('analysis_stats');
-    return saved ? JSON.parse(saved) : { totalScans: 0, aiDetected: 0 };
+    try {
+      return saved ? JSON.parse(saved) : { totalScans: 0, aiDetected: 0 };
+    } catch (e) {
+      return { totalScans: 0, aiDetected: 0 };
+    }
   });
 
   const themeColors = {
@@ -56,14 +66,6 @@ function App() {
   const clearHistory = () => {
     setHistory([]);
     localStorage.removeItem('analysis_history');
-  };
-
-  const streamText = async (text, speed = 20) => {
-    setStreamedText("");
-    for (let i = 0; i < text.length; i++) {
-      setStreamedText(prev => prev + text[i]);
-      await new Promise(resolve => setTimeout(resolve, speed));
-    }
   };
 
   const downloadPDFReport = () => {
@@ -148,20 +150,14 @@ function App() {
     doc.save(`AI_Code_Analysis_Report.pdf`);
   };
 
-  const calculateComplexity = (code) => {
-    const lines = code.split('\n').length;
-    if (lines < 10) return 'Low';
-    if (lines < 50) return 'Medium';
-    return 'High';
-  };
-
   const handleAnalyze = async () => {
     if (!code.trim()) return;
     
     setIsAnalyzing(true);
     setResult(null);
     setError('');
-    setComplexity(calculateComplexity(code));
+    const comp = calculateComplexity(code);
+    setComplexity(comp);
     setStreamedText("AI is analyzing your code... Please wait");
 
     try {
@@ -180,18 +176,15 @@ function App() {
       const percentLine = lines[0];
       const textLines = lines.slice(1);
       
-      const percent = parseInt(percentLine.replace('%', '').trim());
+      const percent = parseInt(percentLine.replace('%', '').trim()) || 0;
       const explanation = textLines.map(line => line.trimStart()).join('\n');
 
       setResult(percent);
       
-      setStats(prev => {
-        const newStats = {
-          totalScans: prev.totalScans + 1,
-          aiDetected: percent > 50 ? prev.aiDetected + 1 : prev.aiDetected
-        };
-        return newStats;
-      });
+      setStats(prev => ({
+        totalScans: prev.totalScans + 1,
+        aiDetected: percent > 50 ? prev.aiDetected + 1 : prev.aiDetected
+      }));
 
       const newEntry = {
         id: Date.now(),
@@ -199,12 +192,10 @@ function App() {
         score: percent,
         snippet: code.trim().substring(0, 60) + (code.trim().length > 60 ? '...' : '')
       };
-      setHistory(prev => {
-        const newHistory = [newEntry, ...prev].slice(0, 10);
-        return newHistory;
-      });
+      
+      setHistory(prev => [newEntry, ...prev].slice(0, 10));
 
-      await streamText(explanation, 10);
+      await streamText(explanation, setStreamedText, 10);
     } catch (e) {
       setError("⚠️ AI analysis is currently unavailable. Please try again later.");
       setResult(0);
@@ -215,7 +206,7 @@ function App() {
   };
 
   return (
-    <div className={`min-h-screen bg-slate-950 text-slate-200 selection:bg-emerald-500/30 transition-colors duration-700`}>
+    <div className="min-h-screen bg-slate-950 text-slate-200 selection:bg-emerald-500/30 transition-colors duration-700">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className={`absolute top-0 -left-1/4 w-1/2 h-1/2 opacity-30 blur-[140px] rounded-full transition-all duration-1000 ${themeColors[theme].primary}`} />
         <div className={`absolute bottom-0 -right-1/4 w-1/2 h-1/2 opacity-10 blur-[140px] rounded-full transition-all duration-1000 ${themeColors[theme].primary}`} />
@@ -244,7 +235,7 @@ function App() {
 
         <main className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8 flex flex-col gap-6">
-            <div className={`bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-emerald-500/30`}>
+            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-emerald-500/30">
               <div className="flex items-center justify-between px-4 py-3 bg-slate-900/80 border-b border-slate-800">
                 <div className="flex items-center gap-4">
                   <div className="flex gap-1.5">
@@ -267,14 +258,12 @@ function App() {
                       fileInput.onchange = (e) => {
                         const file = e.target.files[0];
                         const reader = new FileReader();
-                        reader.onload = (re) => {
-                          setCode(re.target.result);
-                        };
+                        reader.onload = (re) => setCode(re.target.result);
                         reader.readAsText(file);
                       };
                       fileInput.click();
                     }}
-                    className={`p-1.5 hover:bg-emerald-500/10 rounded-md transition-colors text-slate-500 hover:text-emerald-400 flex items-center gap-1 text-[10px]`}
+                    className="p-1.5 hover:bg-emerald-500/10 rounded-md transition-colors text-slate-500 hover:text-emerald-400 flex items-center gap-1 text-[10px]"
                     title="Upload file"
                   >
                     <Download className="w-3.5 h-3.5 rotate-180" />
@@ -282,7 +271,7 @@ function App() {
                   </button>
                   <button 
                     onClick={handlePaste}
-                    className={`p-1.5 hover:bg-emerald-500/10 rounded-md transition-colors text-slate-500 hover:text-emerald-400 flex items-center gap-1 text-[10px]`}
+                    className="p-1.5 hover:bg-emerald-500/10 rounded-md transition-colors text-slate-500 hover:text-emerald-400 flex items-center gap-1 text-[10px]"
                     title="Paste from clipboard"
                   >
                     <Clipboard className="w-4 h-4" />
@@ -290,7 +279,7 @@ function App() {
                   </button>
                   <button 
                     onClick={copyToClipboard}
-                    className={`p-1.5 hover:bg-emerald-500/10 rounded-md transition-colors text-slate-500 hover:text-emerald-400`}
+                    className="p-1.5 hover:bg-emerald-500/10 rounded-md transition-colors text-slate-500 hover:text-emerald-400"
                     title="Copy code"
                   >
                     {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
@@ -308,14 +297,14 @@ function App() {
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="Paste your code here and let AI review it..."
-                className={`w-full h-[380px] bg-transparent p-6 font-mono text-sm focus:outline-none resize-none placeholder:text-slate-600 scrollbar-thin scrollbar-thumb-slate-800 focus:bg-emerald-500/[0.02] transition-colors`}
+                className="w-full h-[380px] bg-transparent p-6 font-mono text-sm focus:outline-none resize-none placeholder:text-slate-600 scrollbar-thin scrollbar-thumb-slate-800 focus:bg-emerald-500/[0.02] transition-colors"
               />
             </div>
             
             <button
               onClick={handleAnalyze}
               disabled={isAnalyzing || !code.trim()}
-              className={`group relative flex items-center justify-center gap-2 w-full py-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:opacity-50 text-white font-bold rounded-xl transition-all duration-300 shadow-xl shadow-emerald-600/40 active:scale-[0.98] overflow-hidden`}
+              className="group relative flex items-center justify-center gap-2 w-full py-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:opacity-50 text-white font-bold rounded-xl transition-all duration-300 shadow-xl shadow-emerald-600/40 active:scale-[0.98] overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
               {isAnalyzing ? (
@@ -332,8 +321,8 @@ function App() {
             </button>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className={`bg-slate-900/40 border border-slate-800/50 rounded-xl p-4 flex gap-4 items-start transition-all hover:border-emerald-500/20`}>
-                <div className={`p-2 rounded-lg bg-emerald-600/10 text-emerald-400`}>
+              <div className="bg-slate-900/40 border border-slate-800/50 rounded-xl p-4 flex gap-4 items-start transition-all hover:border-emerald-500/20">
+                <div className="p-2 rounded-lg bg-emerald-600/10 text-emerald-400">
                   <Info className="w-5 h-5" />
                 </div>
                 <div>
@@ -354,14 +343,14 @@ function App() {
           </div>
 
           <div className="lg:col-span-4 flex flex-col gap-6">
-            <div className={`bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-emerald-500/30`}>
+            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-emerald-500/30">
               <div className="flex items-center justify-between mb-6">
-                <h3 className={`text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2`}>
-                  <FileText className={`w-4 h-4 text-emerald-400`} />
+                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-emerald-400" />
                   Live Score
                 </h3>
                 {complexity && (
-                  <span className={`text-[10px] bg-emerald-500/10 px-2 py-1 rounded text-emerald-400 border border-emerald-500/20`}>
+                  <span className="text-[10px] bg-emerald-500/10 px-2 py-1 rounded text-emerald-400 border border-emerald-500/20">
                     Complexity: {complexity}
                   </span>
                 )}
@@ -404,25 +393,25 @@ function App() {
               </div>
             </div>
 
-            <div className={`bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl flex-1 flex flex-col min-h-[300px] max-h-[500px] transition-all duration-500 hover:border-emerald-500/30`}>
+            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl flex-1 flex flex-col min-h-[300px] max-h-[500px] transition-all duration-500 hover:border-emerald-500/30">
               <div className="flex items-center justify-between mb-4 shrink-0">
                 <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Sparkles className={`w-4 h-4 text-emerald-400`} />
+                  <Sparkles className="w-4 h-4 text-emerald-400" />
                   Analysis Report
                 </h3>
                 <div className="flex items-center gap-2">
                   {result !== null && (
                     <button 
                       onClick={downloadPDFReport}
-                      className={`p-1.5 rounded-md text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all`}
+                      className="p-1.5 rounded-md text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all"
                       title="Download PDF Report"
                     >
                       <Download className="w-4 h-4" />
                     </button>
                   )}
-                  <div className={`h-2 w-2 rounded-full bg-emerald-600 animate-pulse`} />
-                  <div className={`h-2 w-2 rounded-full bg-emerald-600/60 animate-pulse delay-75`} />
-                  <div className={`h-2 w-2 rounded-full bg-emerald-600/30 animate-pulse delay-150`} />
+                  <div className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse" />
+                  <div className="h-2 w-2 rounded-full bg-emerald-600/60 animate-pulse delay-75" />
+                  <div className="h-2 w-2 rounded-full bg-emerald-600/30 animate-pulse delay-150" />
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent pr-2">
@@ -437,38 +426,7 @@ function App() {
               </div>
             </div>
 
-            <div className={`bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl transition-all duration-500 hover:border-emerald-500/30`}>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <History className={`w-4 h-4 text-emerald-400`} />
-                  History
-                </h3>
-                {history.length > 0 && (
-                  <button onClick={clearHistory} className="text-[10px] text-slate-600 hover:text-rose-400 transition-colors">
-                    Clear All
-                  </button>
-                )}
-              </div>
-              <div className="space-y-3 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800">
-                {history.length === 0 ? (
-                  <p className="text-[10px] text-slate-600 italic">No recent scans</p>
-                ) : (
-                  history.map((entry) => (
-                    <div key={entry.id} className="group p-2 rounded-lg bg-slate-950/40 border border-slate-800/50 hover:border-emerald-700 transition-all">
-                      <div className="flex justify-between items-start mb-1">
-                        <span className={`text-[10px] font-bold ${entry.score > 50 ? 'text-rose-400' : 'text-emerald-400'}`}>
-                          {entry.score}% AI
-                        </span>
-                        <span className="text-[9px] text-slate-600">{entry.date.split(',')[0]}</span>
-                      </div>
-                      <p className="text-[10px] text-slate-500 truncate font-mono">
-                        {entry.snippet}
-                      </p>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
+            <HistorySidebar history={history} clearHistory={clearHistory} />
           </div>
         </main>
 
