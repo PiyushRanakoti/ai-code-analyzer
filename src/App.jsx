@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ShieldAlert, CheckCircle2, Loader2, Sparkles, Code2, Users, FileText, Info, Trash2, Copy, Check, Download, Clipboard } from 'lucide-react';
+import { Search, ShieldAlert, Loader2, Users, Info } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import HistorySidebar from './components/HistorySidebar';
+import CodeEditor from './components/CodeEditor';
+import ScoreDisplay from './components/ScoreDisplay';
+import AnalysisReport from './components/AnalysisReport';
 import { calculateComplexity, streamText } from './utils/analysis';
 
 function App() {
@@ -72,7 +75,7 @@ function App() {
     if (!result && !streamedText) return;
     
     const doc = new jsPDF();
-    const primaryColor = [16, 185, 129]; // Emerald Green
+    const primaryColor = [16, 185, 129]; 
 
     doc.setFillColor(249, 250, 251);
     doc.rect(0, 0, 210, 297, 'F');
@@ -235,71 +238,15 @@ function App() {
 
         <main className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8 flex flex-col gap-6">
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-emerald-500/30">
-              <div className="flex items-center justify-between px-4 py-3 bg-slate-900/80 border-b border-slate-800">
-                <div className="flex items-center gap-4">
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-rose-500/80" />
-                    <div className="w-3 h-3 rounded-full bg-amber-500/80" />
-                    <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
-                  </div>
-                  <div className="h-4 w-px bg-slate-800" />
-                  <div className={`flex items-center gap-2 ${themeColors[theme].text} text-xs font-mono uppercase tracking-wider`}>
-                    <Code2 className="w-3.5 h-3.5" />
-                    editor.js
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => {
-                      const fileInput = document.createElement('input');
-                      fileInput.type = 'file';
-                      fileInput.accept = '.js,.py,.cpp,.java,.txt';
-                      fileInput.onchange = (e) => {
-                        const file = e.target.files[0];
-                        const reader = new FileReader();
-                        reader.onload = (re) => setCode(re.target.result);
-                        reader.readAsText(file);
-                      };
-                      fileInput.click();
-                    }}
-                    className="p-1.5 hover:bg-emerald-500/10 rounded-md transition-colors text-slate-500 hover:text-emerald-400 flex items-center gap-1 text-[10px]"
-                    title="Upload file"
-                  >
-                    <Download className="w-3.5 h-3.5 rotate-180" />
-                    Upload
-                  </button>
-                  <button 
-                    onClick={handlePaste}
-                    className="p-1.5 hover:bg-emerald-500/10 rounded-md transition-colors text-slate-500 hover:text-emerald-400 flex items-center gap-1 text-[10px]"
-                    title="Paste from clipboard"
-                  >
-                    <Clipboard className="w-4 h-4" />
-                    Paste
-                  </button>
-                  <button 
-                    onClick={copyToClipboard}
-                    className="p-1.5 hover:bg-emerald-500/10 rounded-md transition-colors text-slate-500 hover:text-emerald-400"
-                    title="Copy code"
-                  >
-                    {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                  </button>
-                  <button 
-                    onClick={() => setCode('')}
-                    className="p-1.5 hover:bg-rose-500/10 rounded-md transition-colors text-slate-500 hover:text-rose-400"
-                    title="Clear editor"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-              <textarea
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Paste your code here and let AI review it..."
-                className="w-full h-[380px] bg-transparent p-6 font-mono text-sm focus:outline-none resize-none placeholder:text-slate-600 scrollbar-thin scrollbar-thumb-slate-800 focus:bg-emerald-500/[0.02] transition-colors"
-              />
-            </div>
+            <CodeEditor 
+              code={code} 
+              setCode={setCode} 
+              handlePaste={handlePaste} 
+              copyToClipboard={copyToClipboard} 
+              copied={copied} 
+              themeColors={themeColors} 
+              theme={theme} 
+            />
             
             <button
               onClick={handleAnalyze}
@@ -343,89 +290,8 @@ function App() {
           </div>
 
           <div className="lg:col-span-4 flex flex-col gap-6">
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-emerald-500/30">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-emerald-400" />
-                  Live Score
-                </h3>
-                {complexity && (
-                  <span className="text-[10px] bg-emerald-500/10 px-2 py-1 rounded text-emerald-400 border border-emerald-500/20">
-                    Complexity: {complexity}
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="relative w-40 h-40 flex items-center justify-center mb-4">
-                  <svg className="w-full h-full transform -rotate-90">
-                    <circle cx="80" cy="80" r="70" fill="none" stroke="currentColor" strokeWidth="10" className="text-slate-800" />
-                    <circle
-                      cx="80"
-                      cy="80"
-                      r="70"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="10"
-                      strokeDasharray={439.8}
-                      strokeDashoffset={439.8 - (439.8 * (result || 0)) / 100}
-                      strokeLinecap="round"
-                      className={`transition-all duration-1000 ease-out ${
-                        result > 50 ? 'text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.3)]' : 'text-emerald-500'
-                      }`}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                    <span className="text-3xl font-bold text-white">{result || 0}%</span>
-                    <span className="text-slate-500 text-[10px] font-medium uppercase tracking-widest">Confidence</span>
-                  </div>
-                </div>
-                <div className="text-center">
-                  {result !== null && (
-                    <div className={`text-sm font-medium px-4 py-1.5 rounded-full border animate-in zoom-in duration-300 ${
-                      result > 50 
-                        ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' 
-                        : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                    }`}>
-                      {result > 50 ? 'Likely AI Generated' : 'Likely Human Written'}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl flex-1 flex flex-col min-h-[300px] max-h-[500px] transition-all duration-500 hover:border-emerald-500/30">
-              <div className="flex items-center justify-between mb-4 shrink-0">
-                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-emerald-400" />
-                  Analysis Report
-                </h3>
-                <div className="flex items-center gap-2">
-                  {result !== null && (
-                    <button 
-                      onClick={downloadPDFReport}
-                      className="p-1.5 rounded-md text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all"
-                      title="Download PDF Report"
-                    >
-                      <Download className="w-4 h-4" />
-                    </button>
-                  )}
-                  <div className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse" />
-                  <div className="h-2 w-2 rounded-full bg-emerald-600/60 animate-pulse delay-75" />
-                  <div className="h-2 w-2 rounded-full bg-emerald-600/30 animate-pulse delay-150" />
-                </div>
-              </div>
-              <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent pr-2">
-                <div className="text-xs md:text-sm text-slate-300 font-mono leading-relaxed whitespace-pre-wrap break-words">
-                  {streamedText || (
-                    <div className="flex flex-col items-center justify-center h-full text-slate-600 gap-3 py-12">
-                      <FileText className="w-8 h-8 opacity-20" />
-                      <p className="italic">Waiting for neural processing...</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
+            <ScoreDisplay result={result} complexity={complexity} />
+            <AnalysisReport result={result} streamedText={streamedText} downloadPDFReport={downloadPDFReport} />
             <HistorySidebar history={history} clearHistory={clearHistory} />
           </div>
         </main>
