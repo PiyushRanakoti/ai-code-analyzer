@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ShieldAlert, CheckCircle2, Loader2, Sparkles, Code2, Users, History, FileText, Info, Trash2, Copy, Check, Download, Clipboard, Palette } from 'lucide-react';
+import { Search, ShieldAlert, CheckCircle2, Loader2, Sparkles, Code2, Users, History, FileText, Info, Trash2, Copy, Check, Download, Clipboard } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 
 function App() {
@@ -13,25 +13,14 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [copied, setCopied] = useState(false);
-  const [theme, setTheme] = useState('indigo');
-  const [complexity, setComplexity] = useState(null);
 
   const [stats, setStats] = useState(() => {
     const saved = localStorage.getItem('analysis_stats');
     return saved ? JSON.parse(saved) : { totalScans: 0, aiDetected: 0 };
   });
 
+  // Fixed Green Theme (Emerald)
   const themeColors = {
-    indigo: { 
-      primary: 'bg-indigo-600', 
-      hover: 'hover:bg-indigo-500', 
-      text: 'text-indigo-400', 
-      border: 'border-indigo-500/20', 
-      glow: 'shadow-indigo-600/40', 
-      accent: 'indigo',
-      gradient: 'from-indigo-600/20',
-      ring: 'text-indigo-500'
-    },
     emerald: { 
       primary: 'bg-emerald-600', 
       hover: 'hover:bg-emerald-500', 
@@ -41,38 +30,9 @@ function App() {
       accent: 'emerald',
       gradient: 'from-emerald-600/20',
       ring: 'text-emerald-500'
-    },
-    violet: { 
-      primary: 'bg-violet-600', 
-      hover: 'hover:bg-violet-500', 
-      text: 'text-violet-400', 
-      border: 'border-violet-500/20', 
-      glow: 'shadow-violet-600/40', 
-      accent: 'violet',
-      gradient: 'from-violet-600/20',
-      ring: 'text-violet-500'
-    },
-    rose: { 
-      primary: 'bg-rose-600', 
-      hover: 'hover:bg-rose-500', 
-      text: 'text-rose-400', 
-      border: 'border-rose-500/20', 
-      glow: 'shadow-rose-600/40', 
-      accent: 'rose',
-      gradient: 'from-rose-600/20',
-      ring: 'text-rose-500'
-    },
-    amber: { 
-      primary: 'bg-amber-600', 
-      hover: 'hover:bg-amber-500', 
-      text: 'text-amber-400', 
-      border: 'border-amber-500/20', 
-      glow: 'shadow-amber-600/40', 
-      accent: 'amber',
-      gradient: 'from-amber-600/20',
-      ring: 'text-amber-500'
-    },
+    }
   };
+  const theme = 'emerald';
 
   useEffect(() => {
     localStorage.setItem('analysis_history', JSON.stringify(history));
@@ -111,10 +71,7 @@ function App() {
     if (!result && !streamedText) return;
     
     const doc = new jsPDF();
-    const primaryColor = themeColors[theme].accent === 'indigo' ? [63, 81, 181] : 
-                        themeColors[theme].accent === 'emerald' ? [16, 185, 129] :
-                        themeColors[theme].accent === 'violet' ? [139, 92, 246] :
-                        themeColors[theme].accent === 'rose' ? [244, 63, 94] : [245, 158, 11];
+    const primaryColor = [16, 185, 129]; // Emerald Green
 
     // Background Accent
     doc.setFillColor(249, 250, 251);
@@ -260,31 +217,17 @@ function App() {
   };
 
   return (
-    <div className={`min-h-screen bg-slate-950 text-slate-200 selection:bg-${themeColors[theme].accent}-500/30 transition-colors duration-700`}>
+    <div className={`min-h-screen bg-slate-950 text-slate-200 selection:bg-emerald-500/30 transition-colors duration-700`}>
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className={`absolute top-0 -left-1/4 w-1/2 h-1/2 opacity-30 blur-[140px] rounded-full transition-all duration-1000 ${themeColors[theme].primary}`} />
         <div className={`absolute bottom-0 -right-1/4 w-1/2 h-1/2 opacity-10 blur-[140px] rounded-full transition-all duration-1000 ${themeColors[theme].primary}`} />
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 py-8">
-        <div className="flex justify-end items-center gap-3 mb-6 bg-slate-900/40 p-2 rounded-full border border-slate-800 w-fit ml-auto">
-          <Palette className="w-4 h-4 text-slate-500 ml-2" />
-          <div className="flex gap-2 mr-1">
-            {Object.entries(themeColors).map(([key, config]) => (
-              <button
-                key={key}
-                onClick={() => setTheme(key)}
-                className={`w-6 h-6 rounded-full border-2 transition-all duration-300 ${theme === key ? 'border-white scale-125 shadow-lg shadow-white/20' : 'border-transparent opacity-40 hover:opacity-70'} ${config.primary}`}
-                title={`${key.charAt(0).toUpperCase() + key.slice(1)} Theme`}
-              />
-            ))}
-          </div>
-        </div>
-        
         <header className="text-center mb-10 animate-in fade-in slide-in-from-top duration-700">
           <div className="inline-flex items-center gap-4 px-4 py-2 rounded-full bg-slate-900/80 border border-slate-800 text-slate-400 text-xs font-medium mb-6">
             <div className="flex items-center gap-1.5">
-              <span className={`w-2 h-2 rounded-full ${themeColors[theme].primary} shadow-[0_0_8px_rgba(99,102,241,0.5)]`} />
+              <span className={`w-2 h-2 rounded-full ${themeColors[theme].primary} shadow-[0_0_8px_rgba(16,185,129,0.5)]`} />
               <span>{stats.totalScans} Total Scans</span>
             </div>
             <div className="w-px h-3 bg-slate-800" />
@@ -293,7 +236,7 @@ function App() {
               <span>{stats.aiDetected} AI Flags</span>
             </div>
           </div>
-          <h1 className={`text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-${themeColors[theme].accent}-200 to-${themeColors[theme].accent}-400 mb-4 tracking-tight transition-all duration-700 uppercase`}>
+          <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-emerald-200 to-emerald-400 mb-4 tracking-tight transition-all duration-700 uppercase">
             AI based Code Plagiarism detector
           </h1>
           <p className="text-slate-400 text-base max-w-2xl mx-auto">
@@ -303,7 +246,7 @@ function App() {
 
         <main className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8 flex flex-col gap-6">
-            <div className={`bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-${themeColors[theme].accent}-500/30`}>
+            <div className={`bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-emerald-500/30`}>
               <div className="flex items-center justify-between px-4 py-3 bg-slate-900/80 border-b border-slate-800">
                 <div className="flex items-center gap-4">
                   <div className="flex gap-1.5">
@@ -331,7 +274,7 @@ function App() {
                       };
                       fileInput.click();
                     }}
-                    className={`p-1.5 hover:bg-${themeColors[theme].accent}-500/10 rounded-md transition-colors text-slate-500 hover:${themeColors[theme].text} flex items-center gap-1 text-[10px]`}
+                    className={`p-1.5 hover:bg-emerald-500/10 rounded-md transition-colors text-slate-500 hover:text-emerald-400 flex items-center gap-1 text-[10px]`}
                     title="Upload file"
                   >
                     <Download className="w-3.5 h-3.5 rotate-180" />
@@ -339,7 +282,7 @@ function App() {
                   </button>
                   <button 
                     onClick={handlePaste}
-                    className={`p-1.5 hover:bg-${themeColors[theme].accent}-500/10 rounded-md transition-colors text-slate-500 hover:${themeColors[theme].text} flex items-center gap-1 text-[10px]`}
+                    className={`p-1.5 hover:bg-emerald-500/10 rounded-md transition-colors text-slate-500 hover:text-emerald-400 flex items-center gap-1 text-[10px]`}
                     title="Paste from clipboard"
                   >
                     <Clipboard className="w-4 h-4" />
@@ -347,7 +290,7 @@ function App() {
                   </button>
                   <button 
                     onClick={copyToClipboard}
-                    className={`p-1.5 hover:bg-${themeColors[theme].accent}-500/10 rounded-md transition-colors text-slate-500 hover:${themeColors[theme].text}`}
+                    className={`p-1.5 hover:bg-emerald-500/10 rounded-md transition-colors text-slate-500 hover:text-emerald-400`}
                     title="Copy code"
                   >
                     {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
@@ -365,14 +308,14 @@ function App() {
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="Paste your code here and let AI review it..."
-                className={`w-full h-[380px] bg-transparent p-6 font-mono text-sm focus:outline-none resize-none placeholder:text-slate-600 scrollbar-thin scrollbar-thumb-slate-800 focus:bg-${themeColors[theme].accent}-500/[0.02] transition-colors`}
+                className={`w-full h-[380px] bg-transparent p-6 font-mono text-sm focus:outline-none resize-none placeholder:text-slate-600 scrollbar-thin scrollbar-thumb-slate-800 focus:bg-emerald-500/[0.02] transition-colors`}
               />
             </div>
             
             <button
               onClick={handleAnalyze}
               disabled={isAnalyzing || !code.trim()}
-              className={`group relative flex items-center justify-center gap-2 w-full py-4 ${themeColors[theme].primary} ${themeColors[theme].hover} disabled:bg-slate-800 disabled:opacity-50 text-white font-bold rounded-xl transition-all duration-300 shadow-xl ${themeColors[theme].glow} active:scale-[0.98] overflow-hidden`}
+              className={`group relative flex items-center justify-center gap-2 w-full py-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:opacity-50 text-white font-bold rounded-xl transition-all duration-300 shadow-xl shadow-emerald-600/40 active:scale-[0.98] overflow-hidden`}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
               {isAnalyzing ? (
@@ -389,8 +332,8 @@ function App() {
             </button>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className={`bg-slate-900/40 border border-slate-800/50 rounded-xl p-4 flex gap-4 items-start transition-all hover:border-${themeColors[theme].accent}-500/20`}>
-                <div className={`p-2 rounded-lg ${themeColors[theme].primary}/10 ${themeColors[theme].text}`}>
+              <div className={`bg-slate-900/40 border border-slate-800/50 rounded-xl p-4 flex gap-4 items-start transition-all hover:border-emerald-500/20`}>
+                <div className={`p-2 rounded-lg bg-emerald-600/10 text-emerald-400`}>
                   <Info className="w-5 h-5" />
                 </div>
                 <div>
@@ -411,14 +354,14 @@ function App() {
           </div>
 
           <div className="lg:col-span-4 flex flex-col gap-6">
-            <div className={`bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-${themeColors[theme].accent}-500/30`}>
+            <div className={`bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-emerald-500/30`}>
               <div className="flex items-center justify-between mb-6">
                 <h3 className={`text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2`}>
-                  <FileText className={`w-4 h-4 ${themeColors[theme].text}`} />
+                  <FileText className={`w-4 h-4 text-emerald-400`} />
                   Live Score
                 </h3>
                 {complexity && (
-                  <span className={`text-[10px] bg-${themeColors[theme].accent}-500/10 px-2 py-1 rounded ${themeColors[theme].text} border ${themeColors[theme].border}`}>
+                  <span className={`text-[10px] bg-emerald-500/10 px-2 py-1 rounded text-emerald-400 border border-emerald-500/20`}>
                     Complexity: {complexity}
                   </span>
                 )}
@@ -438,7 +381,7 @@ function App() {
                       strokeDashoffset={439.8 - (439.8 * (result || 0)) / 100}
                       strokeLinecap="round"
                       className={`transition-all duration-1000 ease-out ${
-                        result > 50 ? 'text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.3)]' : themeColors[theme].ring
+                        result > 50 ? 'text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.3)]' : 'text-emerald-500'
                       }`}
                     />
                   </svg>
@@ -461,25 +404,25 @@ function App() {
               </div>
             </div>
 
-            <div className={`bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl flex-1 flex flex-col min-h-[300px] max-h-[500px] transition-all duration-500 hover:border-${themeColors[theme].accent}-500/30`}>
+            <div className={`bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl flex-1 flex flex-col min-h-[300px] max-h-[500px] transition-all duration-500 hover:border-emerald-500/30`}>
               <div className="flex items-center justify-between mb-4 shrink-0">
                 <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Sparkles className={`w-4 h-4 ${themeColors[theme].text}`} />
+                  <Sparkles className={`w-4 h-4 text-emerald-400`} />
                   Analysis Report
                 </h3>
                 <div className="flex items-center gap-2">
                   {result !== null && (
                     <button 
                       onClick={downloadPDFReport}
-                      className={`p-1.5 rounded-md text-slate-500 hover:${themeColors[theme].text} hover:bg-${themeColors[theme].accent}-500/10 transition-all`}
+                      className={`p-1.5 rounded-md text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all`}
                       title="Download PDF Report"
                     >
                       <Download className="w-4 h-4" />
                     </button>
                   )}
-                  <div className={`h-2 w-2 rounded-full ${themeColors[theme].primary} animate-pulse`} />
-                  <div className={`h-2 w-2 rounded-full ${themeColors[theme].primary}/60 animate-pulse delay-75`} />
-                  <div className={`h-2 w-2 rounded-full ${themeColors[theme].primary}/30 animate-pulse delay-150`} />
+                  <div className={`h-2 w-2 rounded-full bg-emerald-600 animate-pulse`} />
+                  <div className={`h-2 w-2 rounded-full bg-emerald-600/60 animate-pulse delay-75`} />
+                  <div className={`h-2 w-2 rounded-full bg-emerald-600/30 animate-pulse delay-150`} />
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent pr-2">
@@ -494,10 +437,10 @@ function App() {
               </div>
             </div>
 
-            <div className={`bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl transition-all duration-500 hover:border-${themeColors[theme].accent}-500/30`}>
+            <div className={`bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl transition-all duration-500 hover:border-emerald-500/30`}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <History className={`w-4 h-4 ${themeColors[theme].text}`} />
+                  <History className={`w-4 h-4 text-emerald-400`} />
                   History
                 </h3>
                 {history.length > 0 && (
@@ -511,7 +454,7 @@ function App() {
                   <p className="text-[10px] text-slate-600 italic">No recent scans</p>
                 ) : (
                   history.map((entry) => (
-                    <div key={entry.id} className="group p-2 rounded-lg bg-slate-950/40 border border-slate-800/50 hover:border-slate-700 transition-all">
+                    <div key={entry.id} className="group p-2 rounded-lg bg-slate-950/40 border border-slate-800/50 hover:border-emerald-700 transition-all">
                       <div className="flex justify-between items-start mb-1">
                         <span className={`text-[10px] font-bold ${entry.score > 50 ? 'text-rose-400' : 'text-emerald-400'}`}>
                           {entry.score}% AI
