@@ -15,15 +15,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Web Server"
+args = "React App"
 
 [[workflows.workflow]]
-name = "Web Server"
+name = "React App"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node server.js"
+args = "npm run dev"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -35,4 +35,5 @@ externalPort = 80
 
 [deployment]
 deploymentTarget = "static"
-publicDir = "."
+publicDir = "dist"
+build = ["npm", "run", "build"]
