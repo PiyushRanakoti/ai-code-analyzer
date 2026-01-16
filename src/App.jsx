@@ -111,46 +111,92 @@ function App() {
     if (!result && !streamedText) return;
     
     const doc = new jsPDF();
+    const primaryColor = themeColors[theme].accent === 'indigo' ? [63, 81, 181] : 
+                        themeColors[theme].accent === 'emerald' ? [16, 185, 129] :
+                        themeColors[theme].accent === 'violet' ? [139, 92, 246] :
+                        themeColors[theme].accent === 'rose' ? [244, 63, 94] : [245, 158, 11];
+
+    // Background Accent
+    doc.setFillColor(249, 250, 251);
+    doc.rect(0, 0, 210, 297, 'F');
     
-    // Header
-    doc.setFontSize(22);
-    doc.setTextColor(63, 81, 181);
-    doc.text('AI CODE DETECTION REPORT', 20, 20);
+    // Header Bar
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.rect(0, 0, 210, 40, 'F');
+    
+    doc.setFontSize(24);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ANALYSIS REPORT', 20, 25);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`PROJECT: AI BASED CODE PLAGIARISM DETECTOR`, 20, 34);
+    
+    // Content
+    doc.setTextColor(40, 40, 40);
+    doc.setFontSize(10);
+    doc.text(`REPORT ID: #${Date.now().toString().slice(-8)}`, 140, 50);
+    doc.text(`GENERATED: ${new Date().toLocaleString()}`, 140, 55);
+    
+    // Result Card
+    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(20, 65, 170, 45, 3, 3, 'S');
+    
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DETECTION SUMMARY', 30, 75);
+    
+    doc.setFontSize(32);
+    doc.setTextColor(result > 50 ? 244 : primaryColor[0], result > 50 ? 63 : primaryColor[1], result > 50 ? 94 : primaryColor[2]);
+    doc.text(`${result}%`, 30, 95);
     
     doc.setFontSize(12);
     doc.setTextColor(100, 100, 100);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, 30);
+    doc.setFont('helvetica', 'normal');
+    doc.text('AI CONFIDENCE SCORE', 65, 95);
     
-    // Result Section
-    doc.setDrawColor(200, 200, 200);
-    doc.line(20, 35, 190, 35);
-    
-    doc.setFontSize(16);
-    doc.setTextColor(0, 0, 0);
-    doc.text('Analysis Result', 20, 45);
-    
-    doc.setFontSize(14);
-    doc.text(`AI Confidence Score: ${result}%`, 20, 55);
-    doc.text(`Code Complexity: ${complexity || 'N/A'}`, 20, 65);
-    
-    // Explanation
-    doc.setFontSize(16);
-    doc.text('Analysis Summary', 20, 80);
     doc.setFontSize(10);
+    doc.text(`CODE COMPLEXITY: ${complexity || 'N/A'}`, 30, 103);
+    
+    // Analysis Section
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('NEURAL ANALYSIS DETAILS', 20, 125);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
     const splitText = doc.splitTextToSize(streamedText, 170);
-    doc.text(splitText, 20, 90);
+    doc.text(splitText, 20, 135);
     
     // Code Snippet
-    const lastY = 90 + (splitText.length * 5);
-    if (lastY < 250) {
-      doc.setFontSize(16);
-      doc.text('Analyzed Code Snippet', 20, lastY + 10);
+    const lastY = 135 + (splitText.length * 5);
+    if (lastY < 230) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 0, 0);
+      doc.text('SOURCE CODE PREVIEW', 20, lastY + 15);
+      
+      doc.setFillColor(240, 240, 240);
+      doc.rect(20, lastY + 20, 170, 60, 'F');
+      
+      doc.setFont('courier', 'normal');
       doc.setFontSize(8);
-      const codeLines = doc.splitTextToSize(code.substring(0, 1000), 170);
-      doc.text(codeLines, 20, lastY + 20);
+      doc.setTextColor(80, 80, 80);
+      const codeLines = doc.splitTextToSize(code.substring(0, 800), 160);
+      doc.text(codeLines, 25, lastY + 30);
     }
 
-    doc.save(`AI_Report_${Date.now()}.pdf`);
+    // Footer
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text('© 2025 Team Greater Noida | Powered by Advanced Linguistic AI Models', 105, 285, { align: 'center' });
+
+    doc.save(`AI_Code_Analysis_Report.pdf`);
   };
 
   const calculateComplexity = (code) => {
@@ -247,8 +293,8 @@ function App() {
               <span>{stats.aiDetected} AI Flags</span>
             </div>
           </div>
-          <h1 className={`text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-${themeColors[theme].accent}-200 to-${themeColors[theme].accent}-400 mb-4 tracking-tight transition-all duration-700`}>
-            AI CODE DETECTOR
+          <h1 className={`text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-${themeColors[theme].accent}-200 to-${themeColors[theme].accent}-400 mb-4 tracking-tight transition-all duration-700 uppercase`}>
+            AI based Code Plagiarism detector
           </h1>
           <p className="text-slate-400 text-base max-w-2xl mx-auto">
             Advanced detection system for identifying AI patterns in source code.
@@ -272,6 +318,25 @@ function App() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => {
+                      const fileInput = document.createElement('input');
+                      fileInput.type = 'file';
+                      fileInput.accept = '.js,.py,.cpp,.java,.txt';
+                      fileInput.onchange = (e) => {
+                        const file = e.target.files[0];
+                        const reader = new FileReader();
+                        reader.onload = (re) => setCode(re.target.result);
+                        reader.readAsText(file);
+                      };
+                      fileInput.click();
+                    }}
+                    className={`p-1.5 hover:bg-${themeColors[theme].accent}-500/10 rounded-md transition-colors text-slate-500 hover:${themeColors[theme].text} flex items-center gap-1 text-[10px]`}
+                    title="Upload file"
+                  >
+                    <Download className="w-3.5 h-3.5 rotate-180" />
+                    Upload
+                  </button>
                   <button 
                     onClick={handlePaste}
                     className={`p-1.5 hover:bg-${themeColors[theme].accent}-500/10 rounded-md transition-colors text-slate-500 hover:${themeColors[theme].text} flex items-center gap-1 text-[10px]`}
