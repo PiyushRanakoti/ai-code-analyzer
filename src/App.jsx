@@ -185,18 +185,24 @@ function App() {
 
       setResult(percent);
       
-      setStats(prev => ({
-        totalScans: prev.totalScans + 1,
-        aiDetected: percent > 50 ? prev.aiDetected + 1 : prev.aiDetected
-      }));
+      setStats(prev => {
+        const newStats = {
+          totalScans: prev.totalScans + 1,
+          aiDetected: percent > 50 ? prev.aiDetected + 1 : prev.aiDetected
+        };
+        return newStats;
+      });
 
       const newEntry = {
         id: Date.now(),
         date: new Date().toLocaleString(),
         score: percent,
-        snippet: code.substring(0, 60) + (code.length > 60 ? '...' : '')
+        snippet: code.trim().substring(0, 60) + (code.trim().length > 60 ? '...' : '')
       };
-      setHistory(prev => [newEntry, ...prev].slice(0, 10));
+      setHistory(prev => {
+        const newHistory = [newEntry, ...prev].slice(0, 10);
+        return newHistory;
+      });
 
       await streamText(explanation, 10);
     } catch (e) {
@@ -228,7 +234,7 @@ function App() {
               <span>{stats.aiDetected} AI Flags</span>
             </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-emerald-200 to-emerald-400 mb-4 tracking-tight transition-all duration-700 uppercase">
+          <h1 className="text-4xl md:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-white to-emerald-400 mb-4 tracking-tight uppercase animate-gradient-x">
             AI based Code Plagiarism detector
           </h1>
           <p className="text-slate-400 text-base max-w-2xl mx-auto">
