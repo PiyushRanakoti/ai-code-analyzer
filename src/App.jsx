@@ -25,14 +25,7 @@ function App() {
   });
   const [copied, setCopied] = useState(false);
   const [complexity, setComplexity] = useState(null);
-  const [stats, setStats] = useState(() => {
-    const saved = localStorage.getItem('analysis_stats');
-    try {
-      return saved ? JSON.parse(saved) : { totalScans: 0, aiDetected: 0 };
-    } catch (e) {
-      return { totalScans: 0, aiDetected: 0 };
-    }
-  });
+
 
   const themeColors = {
     emerald: { 
@@ -50,8 +43,7 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('analysis_history', JSON.stringify(history));
-    localStorage.setItem('analysis_stats', JSON.stringify(stats));
-  }, [history, stats]);
+  }, [history]);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(code);
@@ -103,10 +95,7 @@ function App() {
 
       setResult(percent);
       
-      setStats(prev => ({
-        totalScans: prev.totalScans + 1,
-        aiDetected: percent > 50 ? prev.aiDetected + 1 : prev.aiDetected
-      }));
+    
 
       const newEntry = {
         id: Date.now(),
@@ -134,7 +123,7 @@ function App() {
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 py-8">
-        <Header stats={stats} themeColors={themeColors} theme={theme} />
+        <Header />
 
         <main className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8 flex flex-col gap-6">
@@ -153,12 +142,12 @@ function App() {
               {isAnalyzing ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Running Neural Analysis...
+                  Running AI Analysis...
                 </>
               ) : (
                 <>
                   <Search className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  Check for AI Patterns
+                  Analyze Code
                 </>
               )}
             </button>

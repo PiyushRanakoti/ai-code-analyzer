@@ -1,5 +1,5 @@
 import React from 'react';
-import { Info, ShieldAlert } from 'lucide-react';
+import { Binoculars, Info, ShieldAlert, Zap } from 'lucide-react';
 
 const InfoCards = () => {
   return (
@@ -22,7 +22,26 @@ const InfoCards = () => {
           <p className="text-xs text-slate-500 mt-1">Your code is processed securely and is never stored on our servers for training.</p>
         </div>
       </div>
+       <div className="bg-slate-900/40 border border-slate-800/50 rounded-xl p-4 flex gap-4 items-start transition-all hover:border-emerald-500/20">
+        <div className="p-2 rounded-lg bg-emerald-600/10 text-emerald-400">
+          <Binoculars className="w-5 h-5" />
+        </div>
+        <div>
+          <h4 className="text-sm font-semibold text-slate-200">Transparency</h4>
+          <p className="text-xs text-slate-500 mt-1">We provide a clear confidence score along with a human-readable explanation.</p>
+        </div>
+      </div>
+      <div className="bg-slate-900/40 border border-slate-800/50 rounded-xl p-4 flex gap-4 items-start transition-all hover:border-emerald-500/20">
+        <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+          <Zap className="w-5 h-5" />
+        </div>
+        <div>
+          <h4 className="text-sm font-semibold text-slate-200">Fast Analysis</h4>
+          <p className="text-xs text-slate-500 mt-1">Results are generated within seconds using optimized AI served Backend.</p>
+        </div>
+      </div>
     </div>
+    
   );
 };
 

@@ -29,7 +29,7 @@ const AnalysisReport = ({ result, streamedText, downloadPDFReport }) => {
           {streamedText || (
             <div className="flex flex-col items-center justify-center h-full text-slate-600 gap-3 py-12">
               <FileText className="w-8 h-8 opacity-20" />
-              <p className="italic">Waiting for neural processing...</p>
+              <p className="italic">Waiting for Analysis Report...</p>
             </div>
           )}
         </div>
