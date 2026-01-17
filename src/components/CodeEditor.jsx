@@ -10,6 +10,42 @@ const CodeEditor = ({
   themeColors,
   theme,
 }) => {
+
+const handleFileUpload = (e, setCode) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    let text = event.target.result;
+
+    // Check if Git conflict markers exist
+    if (text.includes("<<<<<<<") && text.includes(">>>>>>>")) {
+      // 1. Split by the middle separator (=======)
+      // 2. The first part contains the HEAD code, second contains the incoming code
+      const conflictParts = text.split(/=======/);
+      
+      if (conflictParts.length > 1) {
+        // Take the first half (HEAD version)
+        let cleanText = conflictParts[0];
+        
+        // Remove the starting <<<<<<< HEAD line
+        cleanText = cleanText.replace(/<<<<<<<.*\n?/, "");
+        
+        text = cleanText;
+      } else {
+        // If split fails, fallback to aggressive regex to strip all markers
+        text = text.replace(/<<<<<<<[\s\S]*?HEAD.*\n?/, "")
+                   .replace(/=======[\s\S]*?>>>>>>>.*\n?/, "")
+                   .replace(/>>>>>>>.*\n?/, "");
+      }
+    }
+
+    setCode(text.trim());
+  };
+  reader.readAsText(file);
+};
+
   const textareaRef = useRef(null);
   const lineRef = useRef(null);
 
@@ -39,23 +75,17 @@ const CodeEditor = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              const fileInput = document.createElement("input");
-              fileInput.type = "file";
-              fileInput.accept = ".js,.py,.cpp,.java,.txt";
-              fileInput.onchange = (e) => {
-                const file = e.target.files[0];
-                const reader = new FileReader();
-                reader.onload = (re) => setCode(re.target.result);
-                reader.readAsText(file);
-              };
-              fileInput.click();
-            }}
+        <button
+          onClick={() => {
+            const fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.onchange = (e) => handleFileUpload(e, setCode);
+            fileInput.click();
+          }}
             className="p-1.5 hover:bg-emerald-500/10 rounded-md transition-colors text-slate-500 hover:text-emerald-400 flex items-center gap-1 text-[10px]"
-          >
-            <Download className="w-3.5 h-3.5 rotate-180" />
-            Upload
+              >
+                <Download className="w-4 h-4" />
+                Upload
           </button>
 
           <button
